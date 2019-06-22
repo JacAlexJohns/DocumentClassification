@@ -1,6 +1,14 @@
 import numpy as np
 import pandas as pd
+
 import tensorflow as tf
+import tensorflow_transform as tft
+
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers.embeddings import Embedding
+from keras.layers.recurrent import GRU
+from keras import optimizers
 
 def readDataFromFile(file):
     data = pd.read_csv(file).values
@@ -23,14 +31,14 @@ def splitData(data, trainPercent):
         labels[yVals[i]] = i
     ys = np.array([labels[y] for y in ys], dtype=np.int32)
 
-    documentLength = 0
-    for x in xs:
-        documentLength = max(documentLength, len(x.split(' ')))
+    documentLength = 500
+    # for x in xs:
+    #     documentLength = max(documentLength, len(x.split(' ')))
 
     vocabProcessor = tf.contrib.learn.preprocessing.VocabularyProcessor(documentLength)
     xTransformed = vocabProcessor.fit_transform(xs)
 
-    xs = np.array(list(xTransformed))
+    xs = np.array(list(xTransformed), dtype=np.int64)
     numberOfWords = len(vocabProcessor.vocabulary_)
 
     split = int(trainPercent * len(ys))
@@ -41,79 +49,39 @@ def splitData(data, trainPercent):
     yTest = ys[split:]
     xTest = xs[split:]
 
+    print(max([max(x) for x in xTrain]))
+
     return xTrain, yTrain, xTest, yTest, len(yTrain), len(yTest), numberOfWords, documentLength, labels
 
 def rnnModel(batchSize, numberOfWords, documentLength, numberOfClasses, embeddingSize, learnRate):
 
-    global trainOp
+    model = Sequential()
+    model.add(Embedding(numberOfWords, embeddingSize, input_length=documentLength))
+    model.add(GRU(embeddingSize))
+    model.add(Dense(numberOfClasses, activation='softmax'))
+    adam = optimizers.Adam(lr=learnRate)
+    model.compile(loss='sparse_categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
+    return model
 
-    tf.compat.v1.reset_default_graph()
-
-    x = tf.compat.v1.placeholder(tf.int32, [None, documentLength], name="Input")
-    y = tf.compat.v1.placeholder(tf.int32, [None], name="Label")
-
-    wordVectors = tf.contrib.layers.embed_sequence(x, vocab_size=numberOfWords, embed_dim=embeddingSize)
-
-    wordList = tf.unstack(wordVectors, axis=1)
-
-    cell = tf.nn.rnn_cell.GRUCell(embeddingSize)
-
-    _, encoding = tf.nn.static_rnn(cell, wordList, dtype=tf.float32)
-
-    logits = tf.layers.dense(encoding, numberOfClasses, activation=None)
-
-    predictedClasses = tf.argmax(logits, 1, name="Output", output_type=tf.int32)
-
-    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(labels=y, logits=logits)
-
-    optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learnRate)
-    trainOp = optimizer.minimize(loss)
-
-    return {
-        'x': x,
-        'y': y,
-        'probs': logits,
-        'pred': predictedClasses,
-        'loss': loss,
-        'train': trainOp
-    }
-
-def train(data, trainPercent=.8, steps=200, embeddingSize=50, learnRate=0.01):
+def train(data, trainPercent=.8, steps=200, embeddingSize=10, learnRate=0.01):
 
     xTrain, yTrain, xTest, yTest, batchSize, testBatchSize, numberOfWords, documentLength, labels = splitData(data, trainPercent)
 
     model = rnnModel(batchSize, numberOfWords, documentLength, len(labels), embeddingSize, learnRate)
+    model.summary()
+    model.fit(xTrain, yTrain, batchSize, epochs=steps, validation_data=(xTest, yTest))
 
-    with tf.compat.v1.Session() as sess:
+    if (testBatchSize > 0):
 
-        sess.run(tf.compat.v1.global_variables_initializer())
+        score, acc = model.evaluate(xTest, yTest, batch_size=testBatchSize)
 
-        feedDict = {
-            model['x']: xTrain,
-            model['y']: yTrain
-        }
-
-        for i in range(steps):
-            loss, _ = sess.run([model['loss'], model['train']], feedDict)
-            print('Loss at step', i, '=', loss)
-
-        if (testBatchSize > 0):
-            feedDict = {
-                model['x']: xTest
-            }
-
-            predictions = sess.run([model['pred']], feedDict)[0]
-
-            correctCount = sum([int(pred == y) for pred, y in zip(predictions, yTest)])
-            accuracy = correctCount / len(yTest)
-            print('Accuracy = {0:f}'.format(accuracy))
-        
-        sess.close()
+        print('Test Score:', score, '\nTest Accuracy:', acc)
 
 def main():
     file = 'shuffled-full-set-hashed.csv'
     data = readDataFromFile(file)
-    train(data)
+    # splitData(data, .8)
+    train(data, trainPercent=.8, embeddingSize=20, learnRate=0.1)
 
 if __name__ == '__main__':
     main()
