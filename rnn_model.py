@@ -97,7 +97,7 @@ def train(data, trainPercent=.8, documentLength=1000, steps=200, embeddingSize=1
 def main():
     file = 'shuffled-full-set-hashed.csv'
     data = readDataFromFile(file)
-    train(data, trainPercent=.8, steps=200, embeddingSize=10, learnRate=0.05, batchNumber=1)
+    train(data, trainPercent=.8, documentLength=300, steps=75, embeddingSize=20, learnRate=0.025, batchNumber=1)
 
 if __name__ == '__main__':
     main()

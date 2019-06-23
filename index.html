@@ -8,15 +8,55 @@
     html, body {
       margin: 0px;
       padding: 0px;
+      width: 100%;
       height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    h1, #description, #submit-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    h1 {
+      width: 100%;
+      height: 50px;
+    }
+    #description {
+      width: 100%;
+      height: 37.5px;
+    }
+    #submit-container {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    #document-input {
+      width: 100%;
+    }
+    #submit-button {
+      margin: 10px;
     }
     </style>
+    <script>
+    const getDocument = () => {
+      const doc = document.getElementById('document-input').value
+      console.log(doc);
+    }
+    </script>
   </head>
   <body>
     <div id="app">
       <h1>Text Taxonomy</h1>
-      <div>
+      <div id="description">
         This is a cool application to classify certain documents based on the hash values of the words that compose them.
+      </div>
+      <div id="submit-container">
+        <textarea id="document-input" rows="5"></textarea>
+        <button id="submit-button" onclick="getDocument()">
+          Submit
+        </button>
       </div>
     </div>
   </body>
