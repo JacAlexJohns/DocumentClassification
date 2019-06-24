@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'fstab/aws-cli'
+            image 'python:3.5.1'
         }
     }
     environment {
@@ -12,6 +12,7 @@ pipeline {
     stages {
         stage('Upload to S3') {
             steps {
+                sh 'pip3 install aws-cli'
                 sh 'aws s3 cp ./src s3://test-ml-bucket/src --recursive'
             }
         }
