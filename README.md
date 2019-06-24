@@ -1,15 +1,4 @@
-# HeavyWater Machine Learning Problem
-
-### Purpose
-
-The purpose of this problem is to evaluate your abilities in several dimensions at once.
-
-  1. Do you understand the principles of ML/AI/data science/<insert fancy other term here>
-  1. Can you build something that works
-  1. Do you have a grasp of the tool chain from code on your local to code in production
-  1. Can you explain your design and thinking process
-  1. Are you excited by learning and challenges
-
+# Text Taxonomy
 
 ### Problem Statement
 
@@ -27,33 +16,47 @@ The first field is the document label. Everything after the comma is a space del
 
 The dataset is included as part of this repo.
 
-### Your Mission
+### Current State ML
 
-Should you choose to accept it ...
+The current state for the Machine Learning model deployed in this application is a static Recurrent Neural Network model. The model bears the following features:
 
-Train a document classification model. Deploy your model to a public cloud platform (AWS/Google/Azure/Heroku) as a webservice, send us an email with the URL to you github repo, the URL of your publicly deployed service so we can submit test cases and a recorded screen cast demo of your solution's UI, its code and deployment steps. Also, we use AWS so we are partial to you using that ... just saying.
+- Built using Keras
+- Utilizes a Vocabulary Processor
+- Initial input layer is a word embedding layer
+- Built with GRU (gated recurrent unit) cells
+- About 70% test accuracy
 
+### Current State AWS
 
-### Measurement Criteria
+The current state for the AWS infrastucture uses a CloudFormation template to initialize an API within an EC2 instance. The API uses Flask as the core and gunicorn as the server. The reasoning behind using EC2 instead of Lambda was due to restrictions with file sizes and packages in Lambda. The tensorflow library is too large to be supported within Lambda, and refactoring to solve this issue was outside of the targeted scope of this project. So instead the EC2 instance pulls all necessary files from S3 in the UserData section while running the service.
 
-We will measure your solution on the following criteria:
+### Current State Automation
 
-  1. Does your webservice work?
-  1. Is your hosted model as accurate as ours? Better? (think confusion matrix)
-  1. Your code, is it understandable, readable and/or deployable?
-  1. Do you use industry best practices in training/testing/deploying?
-  1. Do you use modern packages/tools in your code and deployment pipeline like [this](https://stelligent.com/2016/02/08/aws-lambda-functions-aws-codepipeline-cloudformation/)?
-  1. The effectiveness of your demo, did you frame the problem and your approach to a solution, did you explain your thinking and any remaining gaps, etc?
-  1. Are we able to run your testcases against your webservice? Can we run them against our webservice?
+The project uses Jenkins as the build and deploy tool. A Jenkinsfile is included in the project which includes two stages: a stage for pushing to S3 and a stage for running the CloudFormation template. In order to utilize this Jenkins process, the tool must already be configured with your AWS credentials.
 
+### Current State Other
 
-### A few more details
+This application has two endpoints: "/" and "/predictions". The "/" endpoint returns a simple html page that gives some overview of the application and also includes the ability to run a document through the "/prediction" endpoint. 
 
-Webservice spec:
+### Future State ML
 
-- RESTful API
-- Respect content-type header (application/json and text/html minimum other bonus)
-- Discoverable from root path
-- URL encoded GET parameter "words" returns predicted document type (confidence is a bonus) in field "prediction" and "confidence"
-- HTML pages should be readable by a human and allow for action, aka input field and submit buttons etc.
-- Even a broken clock is right twice a day. A working webservice is a good first goal. It could return the highest likelihood doc class.
+- Run additional analysis of data
+- Perform additional feature engineering on dataset (undersample to fix class imbalance for starters)
+- Implement automated hyperparameter tuning
+- Try other types of models
+- Utilize more automated framework such as SageMaker (non-free tier!)
+
+### Future State AWS
+
+- Switch to Lambda (solve package size limit issues)
+- Use SageMaker for training and deployment (non-free tier!)
+- Add more automation into the CFT
+
+### Future State Automation
+
+- Add stage for hyperparameter tuning
+- Add stage for creating the model
+
+### Future State Other
+
+- Add ability to write incoming documents and their associated model prediction values to a location (probably an S3 bucket) for further training / improving the model
