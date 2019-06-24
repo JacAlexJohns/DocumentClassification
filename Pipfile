@@ -12,6 +12,9 @@ tensorflow = "*"
 keras = "*"
 tensorflow-transform = "*"
 matplotlib = "*"
+gunicorn = "*"
+flask = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.6"

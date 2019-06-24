@@ -54,12 +54,43 @@ def plotNumberOfDocumentsPerClass(labelsFile, documents):
     plt.savefig('./analysisPlots/documents-per-class.png')
     plt.show()
 
+def plotWordFrequenciesFromDocuments(documents):
+    print('Starting')
+    words = {}
+    for y, x in documents:
+        if type(x) == str:
+            docWords = x.split(' ')
+            for word in docWords:
+                if word in words.keys():
+                    words[word] += 1
+                else:
+                    words[word] = 1
+    print('Processing')
+    documentWords = []
+    wordTotals = [val for key, val in words.items()]
+    average = sum(wordTotals) / len(wordTotals)
+    stddev = 0
+    for w in wordTotals:
+        stddev += (w - average)**2
+    stddev /= len(wordTotals)
+    stddev = stddev**(1/2)
+    wordTotals = []
+    for key, val in words.items():
+        if (val > (average - stddev) and val < (average + stddev)):
+            documentWords.append(key)
+            wordTotals.append(val)
+    print('Plotting')
+    plt.bar(range(len(documentWords)), wordTotals)
+    plt.savefig('./analysisPlots/word-frequencies.png')
+    plt.show()
+
 def main():
     data = readDataFromFile('shuffled-full-set-hashed.csv')
-    average = getAverageDocumentLength(data)
-    plotDocumentLengths(data, average)
-    plotDocumentLengthsPerClass('labels.npy', data)
-    plotNumberOfDocumentsPerClass('labels.npy', data)
+    # average = getAverageDocumentLength(data)
+    # plotDocumentLengths(data, average)
+    # plotDocumentLengthsPerClass('labels.npy', data)
+    # plotNumberOfDocumentsPerClass('labels.npy', data)
+    plotWordFrequenciesFromDocuments(data)
 
 if __name__ == '__main__':
     main()
