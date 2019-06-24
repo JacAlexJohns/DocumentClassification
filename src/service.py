@@ -67,7 +67,7 @@ def returnRoute():
       margin: 10px;
     }
     #class-label, #probability-label {
-      margin: 10px 0;
+      margin: 0 10px;
     }
     </style>
     <script>

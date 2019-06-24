@@ -48,6 +48,7 @@ This application has two endpoints: "/" and "/predictions". The "/" endpoint ret
 
 ### Future State AWS
 
+- Add ELB, AutoScaling group, and larger EC2 instances
 - Switch to Lambda (solve package size limit issues)
 - Use SageMaker for training and deployment (non-free tier!)
 - Add more automation into the CFT
