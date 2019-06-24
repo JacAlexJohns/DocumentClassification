@@ -31,15 +31,20 @@ def returnRoute():
       justify-content: center;
       align-items: flex-start;
       flex-wrap: wrap;
+      background-color: rgba(6, 56, 82, .5);
+      background-image: linear-gradient(10deg, rgba(240, 129, 15, .5) 50%, transparent 50%), linear-gradient(-60deg, rgba(230, 223, 68, .5) 30%, transparent 30%);
     }
-    h1, #description, #submit-container {
+    h1, h2, #description, #submit-container, #button-container {
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    h1 {
+    h1, h2 {
       width: 100%;
       height: 50px;
+    }
+    ul {
+      margin: 0 50px;
     }
     #description {
       width: 100%;
@@ -49,10 +54,16 @@ def returnRoute():
       width: 100%;
       flex-wrap: wrap;
     }
-    #document-input {
+    #document-input, #button-container {
       width: 100%;
+      margin: 0 50px;
     }
     #submit-button {
+      width: 75px;
+      height: 25px;
+      border-radius: 5px;
+      color: white;
+      background-color: rgba(6, 56, 82, .8);
       margin: 10px;
     }
     </style>
@@ -66,7 +77,11 @@ def returnRoute():
         body: JSON.stringify({ 'prediction': doc })
       })
         .then(response => response.json())
-        .then(json => { console.log(json) })
+        .then(json => {
+          console.log(json)
+          document.getElementById('class-label').innerHTML = 'Class: ' + json['Class']
+          document.getElementById('probability-label').innerHTML = 'Probability: ' + json['Probability']
+        })
         .catch(error => { console.log(error) })
     }
     </script>
@@ -77,12 +92,25 @@ def returnRoute():
       <div id="description">
         This is a cool application to classify certain documents based on the hash values of the words that compose them.
       </div>
+      <h2>Endpoints</h2>
+      <ul>
+        <li><pre><b>/</b>            (current page)</pre></li>
+        <li><pre><b>/prediction</b>  POST endpoint: Requires document to be passed as value to key 'prediction'</pre></li>
+      </ul>
+      <h2>Submit a Document</h2>
       <div id="submit-container">
         <textarea id="document-input" rows="5"></textarea>
-        <button id="submit-button" onclick="postDocument()">
-          Submit
-        </button>
+        <div id="button-container">
+          <button id="submit-button" onclick="postDocument()">
+            <b>Submit</b>
+          </button>
+        </div>
+        <div id="class-label"/>
+        <div id="probability-label"/>
       </div>
+      <h2>Some Fun Images!</h2>
+      <img src="../analysisPlots/document-lengths-labeled.png">
+      <img src="../analysisPlots/documents-per-class.png">
     </div>
   </body>
 </html>
@@ -116,7 +144,7 @@ def runPrediction(document):
     for key, val in labels.items():
         if predClass == val:
             pred = key
-    
+
     return pred, predProbability
 
 def getApp():
@@ -129,5 +157,3 @@ def main():
 
 if __name__ == '__main__':
     app.run()
-    
-
