@@ -15,6 +15,9 @@ matplotlib = "*"
 gunicorn = "*"
 flask = "*"
 flask-cors = "*"
+pyopenssl = "*"
+ndg-httpsclient = "*"
+pyasn1 = "*"
 
 [requires]
 python_version = "3.6"

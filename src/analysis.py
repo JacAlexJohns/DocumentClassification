@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import requests
+import json
 
 def readDataFromFile(file):
     data = pd.read_csv(file).values
@@ -84,13 +87,73 @@ def plotWordFrequenciesFromDocuments(documents):
     plt.savefig('./analysisPlots/word-frequencies.png')
     plt.show()
 
+def runPrediction(labels, model, vocabProcessor, document):
+
+    x = pd.Series([document])
+    xTransformed = vocabProcessor.fit_transform(x)
+    xs = np.array(list(xTransformed), dtype=np.int64)
+
+    predictions = model.predict(xs)
+    predicted = predictions[0]
+
+    maxVal = -1
+    predClass = -1
+    predProbability = 0
+    for i in range(len(predicted)):
+        pred = predicted[i]
+        if (pred > maxVal):
+            maxVal = pred
+            predClass = i
+            predProbability = pred
+
+    for key, val in labels.items():
+        if predClass == val:
+            pred = key
+
+    return pred, predProbability
+
+def runPredictionsOnData(data):
+    acc = 0
+    for d in data:
+        label = d[0]
+        if (type(d[1]) != str):
+            d[1] = ''
+        pred, proba = runPrediction(labels, model, vocabProcessor, d[1])
+        if pred == label:
+            acc += 1
+    print(acc)
+    print(acc / len(data))
+
+def runAPIPredictionsOnData(data):
+    url = 'http://ec2-3-91-87-100.compute-1.amazonaws.com/prediction'
+    acc = 0
+    for d in data:
+        label = d[0]
+        if (type(d[1])!= str):
+            d[1] = ''
+        r = requests.post(url, json={'prediction': d[1]})
+
+        response = r.json()
+        pred = response['Class']
+        if pred == label:
+            acc += 1
+        print(pred, ' : ', label, ' : ', acc)
+
 def main():
+    # labels = np.load('labels.npy', allow_pickle=True).item()
+    # model = tf.keras.models.load_model('model.h5')
+    # vocabProcessor = tf.contrib.learn.preprocessing.VocabularyProcessor.restore('vocab')
     data = readDataFromFile('shuffled-full-set-hashed.csv')
     # average = getAverageDocumentLength(data)
     # plotDocumentLengths(data, average)
     # plotDocumentLengthsPerClass('labels.npy', data)
     # plotNumberOfDocumentsPerClass('labels.npy', data)
-    plotWordFrequenciesFromDocuments(data)
+    # plotWordFrequenciesFromDocuments(data)
+    # runPredictionsOnData(data)
+    # runAPIPredictionsOnData(data)
+    print(56463 / len(data))
+
+        
 
 if __name__ == '__main__':
     main()

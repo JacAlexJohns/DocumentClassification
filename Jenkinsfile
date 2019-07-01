@@ -20,7 +20,7 @@ pipeline {
             steps {
                 sh '''
                 aws cloudformation validate-template --region us-east-1 --template-body file://CloudFormation.yaml
-                aws cloudformation create-stack --stack-name ml-service-full --region us-east-1 --template-body file://CloudFormation.yaml --capabilities CAPABILITY_NAMED_IAM
+                aws cloudformation create-stack --stack-name ml-service-full-2 --region us-east-1 --template-body file://CloudFormation.yaml --capabilities CAPABILITY_NAMED_IAM
                 '''
             }
         }
