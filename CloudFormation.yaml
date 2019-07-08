@@ -26,7 +26,7 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -xe
-          yum update
+          yum update -y
           yum install python36 python36-virtualenv -y
           python3.6 -m venv env
           source env/bin/activate
